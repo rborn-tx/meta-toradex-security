@@ -39,8 +39,24 @@ SRC_URI:append = "\
     ${TDX_UBOOT_HARDENING_PATCHES} \
 "
 
-do_compile:prepend() {
+do_compile:prepend:imx-generic-bsp() {
     if [ "${TDX_IMX_HAB_ENABLE}" = "0" ] && [ "${TDX_UBOOT_HARDENING_ENABLE}" = "1" ]; then
-        bbfatal 'The combination TDX_IMX_HAB_ENABLE = "0" and TDX_UBOOT_HARDENING_ENABLE = "1" is not allowed: the whitelisting feature (part of the hardening) currently relies on HAB/AHAB.'
+        bbfatal 'The combination TDX_IMX_HAB_ENABLE="0" and TDX_UBOOT_HARDENING_ENABLE="1" is not allowed:' \
+                'the whitelisting feature (part of the hardening) currently relies on HAB/AHAB.'
     fi
+}
+
+k3_compile_sanity_checks() {
+    if [ "${TDX_K3_HSSE_ENABLE}" = "0" ] && [ "${TDX_UBOOT_HARDENING_ENABLE}" = "1" ]; then
+        bbfatal 'The combination TDX_K3_HSSE_ENABLE="0" and TDX_UBOOT_HARDENING_ENABLE="1" is not allowed:' \
+                'the whitelisting feature (part of the hardening) currently relies on K3.'
+    fi
+}
+
+do_compile:prepend:k3() {
+    k3_compile_sanity_checks
+}
+
+do_compile:prepend:k3r5() {
+    k3_compile_sanity_checks
 }
