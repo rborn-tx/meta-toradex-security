@@ -69,6 +69,8 @@ The hardening features above are controlled by the following variables:
 | `TDX_SECBOOT_REQUIRED_BOOTARGS` | Expected value for the fixed part of the kernel command line | Different value for each machine |
 | `TDX_AMEND_BOOT_SCRIPT` | When set to `1` the boot script will be amended to make it suitable for secure boot; this only works with the script provided by Toradex for BSP reference images; users employing a custom script should set this to `0` | Same value as variable `TDX_UBOOT_HARDENING_ENABLE` |
 
+### U-Boot hardening / setup
+
 The behavior of the different hardening features can be set via the control FDT (see [Devicetree Control in U-Boot](https://u-boot.readthedocs.io/en/stable/develop/devicetree/control.html)). Setting the control FDT at build time can be achieved by adding extra device-tree [.dtsi fragments](https://u-boot.readthedocs.io/en/stable/develop/devicetree/control.html#external-dtsi-fragments) to U-Boot and setting the Kconfig variable `CONFIG_DEVICE_TREE_INCLUDES` appropriately; with Yocto/OE this would normally involve adding small patches to U-Boot and appending changes to its recipe but the details are outside the scope of the present document.
 
 The following device-tree fragment shows all the nodes and properties that can be present in the control FDT:
@@ -113,6 +115,10 @@ A few variables can be used to configure this feature, including:
 
 The complete list of variables can be found in the `tdx-signed-fit-image.inc` file.
 
+### Configuring FIT image signing / known issues
+
+- On the **Verdin AM62** SoM, some of the configuration variables (e.g. `UBOOT_SIGN_KEYDIR`, `UBOOT_SIGN_KEYNAME` (check the complete list in `tdx-signed-fit-image.inc`)) are set through override `k3` to ensure the values coming from layer `meta-toradex-security` override those from layer `meta-ti-bsp`; this should be a temporary measure until fixes to the latter are upstreamed. Due to this, the recommended way to set those variables at the moment is via override `forcevariable`.
+
 ## Configuring rootfs image signing
 
 When the `tdxref-signed` class is inherited, the rootfs image will be generated using the `dm-verity` kernel feature.
@@ -132,7 +138,3 @@ When `tdxref-signed` is used to enable secure boot, the rootfs image is generate
 Because `dm-verity` is read-only, you might want to create an additional partition in the eMMC to store persistent data.
 
 If that is the case, you can use the `tdx-tezi-data-partition` class. For more information, have a look at its documentation ([README-data-partition.md](README-data-partition.md)).
-
-## Known issues and limitations
-
-- Currently the hardening is implemented/integrated on NXP SoCs only; when building for other SoC vendors one has to disable the feature (set `TDX_UBOOT_HARDENING_ENABLE=` to `0`) or the build will fail.
