@@ -6,3 +6,4 @@ update_signing_keys() {
 do_unpack:append() {
     bb.build.exec_func('update_signing_keys', d)
 }
+do_unpack[nostamp] = "1"
